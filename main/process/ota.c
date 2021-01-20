@@ -22,8 +22,6 @@
 
 #define UNCOMPRESSED_BUF_SIZE 32768
 
-// Timeout total 20s (40ms blocking on msg)
-#define DEFAULT_TIMEOUT_BEGIN 500
 #define VERSION_STRING_MAX_LENGTH 32
 
 enum ota_status {
@@ -35,7 +33,6 @@ enum ota_status {
     ERROR_WRITE,
     ERROR_FINISH,
     ERROR_SETPARTITION,
-    ERROR_TIMEOUT,
     ERROR_BADDATA,
     ERROR_NODOWNGRADE,
     ERROR_INVALIDFW,
@@ -52,7 +49,6 @@ static const char MESSAGES[][20] = {
     "ERROR_WRITE",
     "ERROR_FINISH",
     "ERROR_SETPARTITION",
-    "ERROR_TIMEOUT",
     "ERROR_BADDATA",
     "ERROR_NODOWNGRADE",
     "ERROR_INVALIDFW",
@@ -64,7 +60,6 @@ struct bin_msg {
     const uint8_t* inbound_buf;
     size_t len;
     jade_msg_source_t expected_source;
-    bool loaded;
     bool error;
 };
 
@@ -157,7 +152,6 @@ static void reset_ctx(struct bin_msg* bctx, uint8_t* inbound_buf, const jade_msg
     bctx->inbound_buf = inbound_buf;
     bctx->len = 0;
     bctx->expected_source = expected_source;
-    bctx->loaded = false;
     bctx->error = false;
 }
 
@@ -193,7 +187,6 @@ static void handle_in_bin_data(void* ctx, unsigned char* data, size_t rawsize)
     }
 
     bctx->len = written;
-    bctx->loaded = true;
 }
 
 static void send_ok(char* id, jade_msg_source_t source)
@@ -239,8 +232,6 @@ void ota_process(void* process_ptr)
     uint32_t remaining_compressed = compressedsize;
     uint32_t remaining = firmwaresize;
 
-    size_t timeout = DEFAULT_TIMEOUT_BEGIN;
-
     int status = TINFL_STATUS_NEEDS_MORE_INPUT;
     uint8_t* uncompressed = JADE_MALLOC_PREFER_SPIRAM(UNCOMPRESSED_BUF_SIZE);
     jade_process_free_on_exit(process, uncompressed);
@@ -260,14 +251,9 @@ void ota_process(void* process_ptr)
     struct bin_msg binctx;
     ota_return_status = SUCCESS;
     while (remaining_compressed) {
-        if (!timeout) {
-            JADE_LOGE("OTA Timeout");
-            ota_return_status = ERROR_TIMEOUT;
-            goto cleanup;
-        }
 
         reset_ctx(&binctx, NULL, source);
-        jade_process_get_in_message(&binctx, &handle_in_bin_data, false); // non-blocking, we want to detect timeouts
+        jade_process_get_in_message(&binctx, &handle_in_bin_data, true);
 
         if (binctx.error) {
             JADE_LOGE("Error on ota_data message");
@@ -275,14 +261,6 @@ void ota_process(void* process_ptr)
             goto cleanup;
         }
 
-        if (!binctx.loaded) {
-            --timeout;
-            JADE_LOGD("OTA message timeout, retries remaining: %u", timeout);
-            continue;
-        }
-
-        // reset timeouts
-        timeout = DEFAULT_TIMEOUT_BEGIN;
         uploading = true;
 
         JADE_LOGI("Received ota_data msg %s, payload size %u", binctx.id, binctx.len);
