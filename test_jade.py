@@ -1171,7 +1171,8 @@ def run_interface_tests(jadeapi,
 
     # Too much input test - sends a lot of data so only
     # run if requested (eg. ble would take a long time)
-    if test_overflow_input:
+    psram_compatible = ['JADE', 'M5FIRE']
+    if startinfo['BOARD_TYPE'] in psram_compatible and test_overflow_input:
         logger.info("Buffer overflow test")
         test_too_much_input(jadeapi.jade)
 
