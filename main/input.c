@@ -61,7 +61,8 @@ static inline void wheel_next()
     }
 }
 
-#if !defined CONFIG_BOARD_TYPE_M5_FIRE && !defined CONFIG_BOARD_TYPE_M5_BLACK_GRAY
+#if !defined CONFIG_BOARD_TYPE_M5_FIRE && !defined CONFIG_BOARD_TYPE_M5_BLACK_GRAY                                     \
+    && !defined CONFIG_BOARD_TYPE_TTGO_TDISPLAY
 static QueueHandle_t event_queue;
 void wheel_watch_task(void* info_void)
 {
@@ -89,23 +90,53 @@ void wheel_watch_task(void* info_void)
     vTaskDelete(NULL);
 }
 #else
-// Used in M5 only case in wheel_init()
-static void button_A(void* arg) { wheel_prev(); }
 
-static void button_B(void* arg) { wheel_next(); }
+// Used in M5 only case in wheel_init()
+static bool button_A_pressed = false;
+static bool button_B_pressed = false;
+
+static void button_pressed(void* arg)
+{
+    bool* button = arg;
+    *button = true;
+}
+
+static void button_handle_two_buttonsA(void* arg)
+{
+    if (button_B_pressed) {
+        gui_front_click();
+    } else if (button_A_pressed) {
+        wheel_next();
+    }
+    button_B_pressed = false;
+    button_A_pressed = false;
+}
+
+static void button_handle_two_buttonsB(void* arg)
+{
+    if (button_A_pressed) {
+        gui_front_click();
+    } else if (button_B_pressed) {
+        wheel_prev();
+    }
+    button_B_pressed = false;
+    button_A_pressed = false;
+}
+
 #endif
 
 void wheel_init()
 {
-#if defined CONFIG_BOARD_TYPE_M5_FIRE || defined CONFIG_BOARD_TYPE_M5_BLACK_GRAY
+#if defined CONFIG_BOARD_TYPE_M5_FIRE || defined CONFIG_BOARD_TYPE_M5_BLACK_GRAY                                       \
+    || defined CONFIG_BOARD_TYPE_TTGO_TDISPLAY
 
     button_handle_t btn_handle_prev = iot_button_create(CONFIG_INPUT_BTN_A, BUTTON_ACTIVE_LOW);
-    iot_button_set_evt_cb(btn_handle_prev, BUTTON_CB_RELEASE, button_A, NULL);
-    iot_button_add_custom_cb(btn_handle_prev, 1, button_A, NULL);
+    iot_button_set_evt_cb(btn_handle_prev, BUTTON_CB_PUSH, button_pressed, &button_A_pressed);
+    iot_button_set_evt_cb(btn_handle_prev, BUTTON_CB_RELEASE, button_handle_two_buttonsA, NULL);
 
     button_handle_t btn_handle_next = iot_button_create(CONFIG_INPUT_BTN_B, BUTTON_ACTIVE_LOW);
-    iot_button_set_evt_cb(btn_handle_next, BUTTON_CB_RELEASE, button_B, NULL);
-    iot_button_add_custom_cb(btn_handle_next, 1, button_B, NULL);
+    iot_button_set_evt_cb(btn_handle_next, BUTTON_CB_PUSH, button_pressed, &button_B_pressed);
+    iot_button_set_evt_cb(btn_handle_next, BUTTON_CB_RELEASE, button_handle_two_buttonsB, NULL);
 #else
     // Initialise the rotary encoder device with the GPIOs for A and B signals
     rotary_encoder_info_t* info = (rotary_encoder_info_t*)JADE_MALLOC(sizeof(rotary_encoder_info_t));
