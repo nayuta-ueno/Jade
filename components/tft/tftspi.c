@@ -15,6 +15,7 @@
 #include "freertos/task.h"
 #include "esp_heap_caps.h"
 #include "soc/spi_reg.h"
+#include "../../main/power.h"
 
 
 // ====================================================
@@ -873,21 +874,13 @@ void TFT_PinsInit()
     gpio_set_direction(PIN_NUM_CLK, GPIO_MODE_OUTPUT);
     gpio_set_direction(PIN_NUM_DC, GPIO_MODE_OUTPUT);
     gpio_set_level(PIN_NUM_DC, 0);
-#if USE_TOUCH
-    gpio_pad_select_gpio(PIN_NUM_TCS);
-    gpio_set_direction(PIN_NUM_TCS, GPIO_MODE_OUTPUT);
-#endif    
-#if PIN_NUM_BCKL
-    gpio_pad_select_gpio(PIN_NUM_BCKL);
-    gpio_set_direction(PIN_NUM_BCKL, GPIO_MODE_OUTPUT);
-    gpio_set_level(PIN_NUM_BCKL, PIN_BCKL_OFF);
-#endif
+// #if USE_TOUCH
+//     gpio_pad_select_gpio(PIN_NUM_TCS);
+//     gpio_set_direction(PIN_NUM_TCS, GPIO_MODE_OUTPUT);
+// #endif    
 
-#if PIN_NUM_RST
-    gpio_pad_select_gpio(PIN_NUM_RST);
-    gpio_set_direction(PIN_NUM_RST, GPIO_MODE_OUTPUT);
-    gpio_set_level(PIN_NUM_RST, 0);
-#endif
+	power_open_drain_gpio();
+	power_lcd_reset_off();
 }
 
 // Initialize the display
@@ -898,9 +891,9 @@ void TFT_display_init()
 
 #if PIN_NUM_RST
     //Reset the display
-    gpio_set_level(PIN_NUM_RST, 0);
+	power_lcd_reset_on();
     vTaskDelay(20 / portTICK_RATE_MS);
-    gpio_set_level(PIN_NUM_RST, 1);
+	power_lcd_reset_off();
     vTaskDelay(150 / portTICK_RATE_MS);
 #endif
 
@@ -939,11 +932,6 @@ void TFT_display_init()
 	// Clear screen
     _tft_setRotation(PORTRAIT);
 	TFT_pushColorRep(0, 0, _width-1, _height-1, (color_t){0,0,0}, (uint32_t)(_height*_width));
-
-	///Enable backlight
-#if PIN_NUM_BCKL
-    gpio_set_level(PIN_NUM_BCKL, PIN_BCKL_ON);
-#endif
 }
 
 

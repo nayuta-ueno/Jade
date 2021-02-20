@@ -99,11 +99,7 @@ static void idletimer_task(void* ignore)
 
             JADE_LOGW("Idle-timeout elapsed  - powering-off device");
             free_keychain();
-#ifdef CONFIG_HAS_AXP
             power_shutdown();
-#else
-            esp_deep_sleep_start();
-#endif
         }
 
         // Not timed out yet.

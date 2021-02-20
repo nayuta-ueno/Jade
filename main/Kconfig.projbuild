@@ -58,16 +58,16 @@ menu "Input configuration"
   config INPUT_BTN_A
     int "BTN A"
     range 0 40
-    default 39 if BOARD_TYPE_M5
+    default 27 if BOARD_TYPE_M5
   config INPUT_BTN_B
     int "BTN B"
     range 0 40
-    default 37 if BOARD_TYPE_M5
+    default 27 if BOARD_TYPE_M5
   config INPUT_WHEEL_SW
     int "Wheel SW"
     range 0 40
     default 33 if BOARD_TYPE_JADE
-    default  0 if BOARD_TYPE_M5
+    default 27 if BOARD_TYPE_M5
     default 27 if BOARD_TYPE_DEV
   config INPUT_INVERT_WHEEL
     bool "Invert wheel"
@@ -77,7 +77,7 @@ menu "Input configuration"
     int "Front switch"
     range 0 40
     default 21 if BOARD_TYPE_JADE
-    default 38 if BOARD_TYPE_M5
+    default 27 if BOARD_TYPE_M5
     default 35 if BOARD_TYPE_DEV
 endmenu
 
@@ -240,7 +240,7 @@ menu "TFT Display"
       int "PIN_NUM_MISO"
       range 0 40
       default 0 if BOARD_TYPE_JADE
-      default 19 if BOARD_TYPE_M5
+      default 38 if BOARD_TYPE_M5
       default 25 if BOARD_TYPE_DEV
     config DISP_PIN_NUM_MOSI
       int "PIN_NUM_MOSI"
@@ -258,13 +258,13 @@ menu "TFT Display"
       int "PIN_NUM_CS"
       range 0 40
       default 13 if BOARD_TYPE_JADE
-      default 14 if BOARD_TYPE_M5
+      default  5 if BOARD_TYPE_M5
       default 22 if BOARD_TYPE_DEV
     config DISP_PIN_NUM_DC
       int "PIN_NUM_DC"
       range 0 40
       default 12 if BOARD_TYPE_JADE
-      default 27 if BOARD_TYPE_M5
+      default 15 if BOARD_TYPE_M5
       default 21 if BOARD_TYPE_DEV
     config DISP_PIN_NUM_TCS
       int "PIN_NUM_TCS"
@@ -280,7 +280,6 @@ menu "TFT Display"
       int "PIN_NUM_BCKL"
       range 0 40
       default 0 if BOARD_TYPE_JADE
-      default 32 if BOARD_TYPE_M5
       default 0 if BOARD_TYPE_DEV
     config DISP_INVERT_BKCL_SIGNAL
       bool "Invert backlight signal (on/off)"

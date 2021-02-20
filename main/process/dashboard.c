@@ -439,11 +439,7 @@ static void handle_sleep()
 {
     const bool bSleep = await_yesno_activity("Sleep", "\nDo you want to put Jade\ninto sleep mode?");
     if (bSleep) {
-#ifdef CONFIG_HAS_AXP
         power_shutdown();
-#else
-        esp_deep_sleep_start();
-#endif
     }
 }
 
@@ -520,10 +516,8 @@ static void handle_ble() { await_message_activity("BLE disabled in this firmware
 static void handle_device()
 {
     char power_status[32] = "NO BAT";
-#ifdef CONFIG_HAS_AXP
     const int ret = snprintf(power_status, sizeof(power_status), "%umv", power_get_vbat());
     JADE_ASSERT(ret > 0 && ret < sizeof(power_status));
-#endif
 
     char mac[18] = "NO BLE";
 #ifndef CONFIG_ESP32_NO_BLOBS

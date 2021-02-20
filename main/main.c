@@ -58,6 +58,9 @@ static void boot_process()
     TaskHandle_t* serial_handle = NULL;
     TaskHandle_t* ble_handle = NULL;
 
+    gpio_pad_select_gpio(PIN_NUM_TCS);
+    gpio_set_direction(PIN_NUM_TCS, GPIO_MODE_OUTPUT);
+
     if (!jade_process_init(&serial_handle, &ble_handle)) {
         JADE_ABORT();
     }
@@ -66,22 +69,18 @@ static void boot_process()
     esp_log_set_vprintf(serial_logger);
 #endif
 
-#ifdef CONFIG_HAS_AXP
-    const esp_err_t rc = power_init();
-    JADE_ASSERT(rc == ESP_OK);
-#endif
+    power_init();
 
     if (!storage_init()) {
         JADE_ABORT();
     }
 
     wallet_init();
+
     display_init();
     gui_init();
     idletimer_init();
     input_init();
-    button_init();
-    wheel_init();
 
     // Display splash screen with Blockstream logo.  Carry out further initialisation
     // while that screen is shown for a short time.  Then test to see whether the
@@ -93,6 +92,13 @@ static void boot_process()
     wait_event_data_t* event_data = make_wait_event_data();
     JADE_ASSERT(event_data);
     gui_activity_register_event(act, GUI_EVENT, GUI_FRONT_CLICK_EVENT, sync_wait_event_handler, event_data);
+
+    for (int lp = 0; lp < 5; lp++) {
+        vTaskDelay(500 / portTICK_RATE_MS);
+        power_led(0);
+        vTaskDelay(500 / portTICK_RATE_MS);
+        power_led(1);
+    }
 
     if (!serial_init(serial_handle)) {
         JADE_ABORT();

@@ -59,10 +59,8 @@ void display_init()
     TFT_setRotation(CONFIG_DISP_ORIENTATION_DEFAULT);
     TFT_resetclipwin();
 
-#ifdef CONFIG_HAS_AXP
     JADE_LOGI("Powering the screen");
     power_screen_on();
-#endif
 }
 
 #include "../logo/splash.c"

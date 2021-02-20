@@ -2,8 +2,6 @@
 #include "jade_assert.h"
 #include <driver/i2c.h>
 
-#ifdef CONFIG_HAS_AXP
-
 #define I2C_BATTERY_PORT I2C_NUM_0
 
 #define ACK_CHECK_EN 0x1 /*!< I2C master will check ack from slave*/
@@ -27,18 +25,85 @@
         }                                                                                                              \
     } while (false)
 
+static esp_err_t write_command(uint8_t reg, uint8_t val);
+
+
 esp_err_t power_init()
 {
     i2c_config_t conf;
     conf.mode = I2C_MODE_MASTER;
-    conf.sda_io_num = 4;
+    conf.sda_io_num = 21;
     conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
-    conf.scl_io_num = 2;
+    conf.scl_io_num = 22;
     conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
     conf.master.clk_speed = 400000;
 
     I2C_CHECK_RET(i2c_param_config(I2C_BATTERY_PORT, &conf));
     I2C_CHECK_RET(i2c_driver_install(I2C_BATTERY_PORT, conf.mode, 0, 0, 0));
+
+    // LDO2/3
+    //      LDO2: 3300 ==> (3300 - 1800)/100 ==> 15
+    write_command(0x28, 15 << 4);
+    // DCDC3: back light:28-140
+    //      DC3: 2700 ==> (2700 - 700)/25 ==> 80
+    write_command(0x27, 80);
+    // Voff
+    //      3000 ==> (3000 - 2600)/100 ==> 4
+    write_command(0x31, 4);
+    // Charge
+    //      100mA    [3:0]=0000
+    //               [4]  =0
+    //      4.2V     [6:5]=10
+    //      enable   [7]  =1
+    write_command(0x33, 0xc0);
+    // PEK
+    //      startup 128ms   [7:6]=00
+    //                      [5:2]=0111
+    //      power off 4s    [1:0]=00
+    write_command(0x36, 0x1c);
+    // enable
+    //              [7:3]=00000
+    //      LDO2    [2]=1
+    //      DCDC3   [1]=1
+    //      DCDC1   [0]=1
+    write_command(0x12, 0x07);
+
+    ///////////////////////////
+    // GPIO4:RST
+    // GPIO3:x
+    // GPIO2:SPK_EN
+    // GPIO1:SYS_LED
+    // GPIO0:BUS_PW_EN
+    ///////////////////////////
+    // GPIO[4:3] mode
+    //      GPIO3: x
+    //      GPIO4: output(open drain)
+    write_command(0x95, 0x84);
+    // GPIO2 mode
+    //      GPIO2: output(open drain)
+    write_command(0x93, 0x00);
+    // GPIO0 volt
+    //      3300 ==> (3300 - 1800)/100 ==> 15
+    //      3.3V: [7:4]=1111
+    write_command(0x91, 0xf0);
+    // ADC enable
+    write_command(0x82, 0xfe);
+
+    // system LED
+    power_led(0);
+
+    // enable
+    //      EXT     [7]=1
+    //              [6:3]=0000
+    //      LDO2    [2]=1
+    //      DCDC3   [1]=1
+    //      DCDC1   [0]=1
+    write_command(0x12, 0x87);
+    // GPIO0 mode
+    //              [7:3]=00000
+    //      LDO     [2:0]=010
+    write_command(0x90, 0x02);
+
     return ESP_OK;
 }
 
@@ -91,33 +156,54 @@ static esp_err_t write_command(uint8_t reg, uint8_t val)
     return ESP_OK;
 }
 
-esp_err_t power_screen_on() { return write_command(0x90, 0x02); }
+// esp_err_t power_screen_on() { return write_command(0x90, 0x02); }
+// esp_err_t power_screen_off() { return write_command(0x90, 0x01); }
+// esp_err_t power_set_camera_voltage() { return write_command(0x28, 0xf0); }
+// esp_err_t power_enable_dc_dc1() { return write_command(0x12, 0x4d); }
+// esp_err_t power_enable_dc_dc2() { return write_command(0x10, 0xff); }
+// esp_err_t power_enable_adcs() { return write_command(0x82, 0xff); }
+// esp_err_t power_enable_charging() { return write_command(0x33, 0xc0); }
+// esp_err_t power_enable_coulomb_counter() { return write_command(0xb8, 0x80); }
+// esp_err_t power_setup_pek() { return write_command(0x36, 0x5c); }
+// esp_err_t power_set_v_off() { return write_command(0x31, 0x04); }
 
-esp_err_t power_screen_off() { return write_command(0x90, 0x01); }
+esp_err_t power_screen_on() { return ESP_OK; }
+esp_err_t power_screen_off() { return ESP_OK; }
+esp_err_t power_set_camera_voltage() { return ESP_OK; }
+esp_err_t power_enable_dc_dc1() { return ESP_OK; }
+esp_err_t power_enable_dc_dc2() { return ESP_OK; }
+esp_err_t power_enable_adcs() { return ESP_OK; }
+esp_err_t power_enable_charging() { return ESP_OK; }
+esp_err_t power_enable_coulomb_counter() { return ESP_OK; }
+esp_err_t power_setup_pek() { return ESP_OK; }
+esp_err_t power_set_v_off() { return ESP_OK; }
 
-esp_err_t power_set_camera_voltage() { return write_command(0x28, 0xf0); }
-
-esp_err_t power_enable_dc_dc1() { return write_command(0x12, 0x4d); }
-
-esp_err_t power_enable_dc_dc2() { return write_command(0x10, 0xff); }
-
-esp_err_t power_enable_adcs() { return write_command(0x82, 0xff); }
-
-esp_err_t power_enable_charging() { return write_command(0x33, 0xc0); }
-
-esp_err_t power_enable_coulomb_counter() { return write_command(0xb8, 0x80); }
-
-esp_err_t power_setup_pek() { return write_command(0x36, 0x5c); }
-
-esp_err_t power_set_v_off() { return write_command(0x31, 0x04); }
-
+// 0x95: GPIO[4:3]機能設定
+// 0x96: GPIO[4:3]値設定
 esp_err_t power_open_drain_gpio() { return write_command(0x95, 0x05); }
 
-esp_err_t power_gpio_on() { return write_command(0x96, 0x01); }
-
-esp_err_t power_gpio_off() { return write_command(0x96, 0x03); }
+// GPIO[4:3]=01 ... M5CORE2 DISPリセット
+esp_err_t power_lcd_reset_on() { return write_command(0x96, 0x01); }
+// GPIO[4:3]=11 ... M5CORE2 DISPリセット解除
+esp_err_t power_lcd_reset_off() { return write_command(0x96, 0x03); }
 
 esp_err_t power_shutdown() { return write_command(0x32, 0x80); }
+
+esp_err_t power_led(uint8_t onoff) {
+    // uint8_t buf;
+    // I2C_LOG_ANY_ERROR(master_read_slave(0x34, 0x94, &buf, 1));
+    // if (onoff) {
+    //     buf &= 0x02;
+    // } else {
+    //     buf |= 0x02;
+    // }
+    // return write_command(0x94, buf);
+    if (onoff) {
+        return write_command(0x92, 0x00);  //GPIO1 ... OUTPUT
+    } else {
+        return write_command(0x92, 0x01);  //GPIO1 ... INPUT
+    }
+}
 
 uint16_t power_get_vbat()
 {
@@ -213,34 +299,3 @@ bool usb_connected()
     is_usb_connected = buf & 0b00100000;
     return is_usb_connected;
 }
-
-#else /* CONFIG_HAS_AXP */
-
-esp_err_t power_init() { return ESP_OK; }
-
-esp_err_t power_screen_on() { return ESP_OK; }
-esp_err_t power_screen_off() { return ESP_OK; }
-esp_err_t power_set_camera_voltage() { return ESP_OK; }
-esp_err_t power_enable_dc_dc1() { return ESP_OK; }
-esp_err_t power_enable_dc_dc2() { return ESP_OK; }
-esp_err_t power_enable_adcs() { return ESP_OK; }
-esp_err_t power_enable_charging() { return ESP_OK; }
-esp_err_t power_enable_coulomb_counter() { return ESP_OK; }
-esp_err_t power_setup_pek() { return ESP_OK; }
-esp_err_t power_set_v_off() { return ESP_OK; }
-esp_err_t power_open_drain_gpio() { return ESP_OK; }
-esp_err_t power_gpio_on() { return ESP_OK; }
-esp_err_t power_gpio_off() { return ESP_OK; }
-esp_err_t power_shutdown() { return ESP_OK; }
-
-uint16_t power_get_vbat() { return 0; }
-uint8_t power_get_battery_status() { return 0; }
-bool power_get_battery_charging() { return false; }
-uint16_t power_get_ibat_charge() { return false; }
-uint16_t power_get_ibat_discharge() { return 0; }
-uint16_t power_get_vusb() { return 0; }
-uint16_t power_get_iusb() { return 0; }
-uint16_t power_get_temp() { return 0; }
-bool usb_connected() { return true; }
-
-#endif /* CONFIG_HAS_AXP */

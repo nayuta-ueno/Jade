@@ -4,7 +4,6 @@
 #include <wally_crypto.h>
 
 #include "../button_events.h"
-#include "../camera.h"
 #include "../gui.h"
 #include "../jade_assert.h"
 #include "../keychain.h"
@@ -494,7 +493,7 @@ static bool mnemonic_qr(jade_process_t* process, char mnemonic[MNEMONIC_BUFLEN])
     jade_camera_data_t camera_data;
     SENSITIVE_PUSH(&camera_data, sizeof(jade_camera_data_t));
 
-    make_mnemonic_qr_scan(&activity, &camera_data.camera, &camera_data.text);
+    make_mnemonic_qr_scan(&activity, NULL, NULL);
     gui_set_current_activity(activity);
     camera_data.activity = activity;
     camera_data.qr_seen = false;
