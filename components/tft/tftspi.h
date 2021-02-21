@@ -57,7 +57,7 @@
 #define PIN_NUM_CLK  CONFIG_DISP_PIN_NUM_CLK 		// SPI CLOCK pin
 #define PIN_NUM_CS   CONFIG_DISP_PIN_NUM_CS  		// Display CS pin
 #define PIN_NUM_DC   CONFIG_DISP_PIN_NUM_DC  		// Display command/data pin
-#define PIN_NUM_TCS  CONFIG_DISP_PIN_NUM_TCS  		// Touch screen CS pin
+// #define PIN_NUM_TCS  CONFIG_DISP_PIN_NUM_TCS  		// Touch screen CS pin
 
 #define PIN_NUM_RST  CONFIG_DISP_PIN_NUM_RST   	    // GPIO used for RESET control
 #define PIN_NUM_BCKL CONFIG_DISP_PIN_NUM_BCKL       // GPIO used for backlight control

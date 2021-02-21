@@ -9,6 +9,7 @@
 #define ACK_VAL 0x0 /*!< I2C ack value */
 #define NACK_VAL 0x1 /*!< I2C nack value */
 
+#if 0
 #define I2C_CHECK_RET(expr)                                                                                            \
     do {                                                                                                               \
         const esp_err_t res = (expr);                                                                                  \
@@ -24,9 +25,28 @@
             JADE_LOGE("i2c call returned: %u", res);                                                                   \
         }                                                                                                              \
     } while (false)
+#endif
+
+#define I2C_CHECK_RET(expr)                                                                                            \
+    do {                                                                                                               \
+        const esp_err_t res = (expr);                                                                                  \
+        if (res != ESP_OK) {                                                                                           \
+            vTaskDelay(1);                                                                                             \
+            continue;                                                                                                  \
+        }                                                                                                              \
+    } while (false)
+#define I2C_LOG_ANY_ERROR(expr)                                                                                        \
+    do {                                                                                                               \
+        const esp_err_t res = (expr);                                                                                  \
+        if (res != ESP_OK) {                                                                                           \
+            vTaskDelay(1);                                                                                             \
+            continue;                                                                                                  \
+        }                                                                                                              \
+    } while (false)
+
 
 static esp_err_t write_command(uint8_t reg, uint8_t val);
-
+static bool led;
 
 esp_err_t power_init()
 {
@@ -192,17 +212,41 @@ esp_err_t power_shutdown() { return write_command(0x32, 0x80); }
 esp_err_t power_led(uint8_t onoff) {
     // uint8_t buf;
     // I2C_LOG_ANY_ERROR(master_read_slave(0x34, 0x94, &buf, 1));
+    // // GPIO1
     // if (onoff) {
-    //     buf &= 0x02;
+    //     buf &= ~0x02;
     // } else {
     //     buf |= 0x02;
     // }
     // return write_command(0x94, buf);
     if (onoff) {
+        led = true;
         return write_command(0x92, 0x00);  //GPIO1 ... OUTPUT
     } else {
+        led = false;
         return write_command(0x92, 0x01);  //GPIO1 ... INPUT
     }
+}
+
+void power_led_blink(void)
+{
+    if (led) {
+        power_led(0);
+    } else {
+        power_led(1);
+    }
+}
+
+esp_err_t power_speaker(uint8_t onoff) {
+    uint8_t buf;
+    I2C_LOG_ANY_ERROR(master_read_slave(0x34, 0x94, &buf, 1));
+    // GPIO2
+    if (onoff) {
+        buf |= 0x04;
+    } else {
+        buf &= ~0x04;
+    }
+    return write_command(0x94, buf);
 }
 
 uint16_t power_get_vbat()

@@ -44,13 +44,19 @@ static void IRAM_ATTR FT6336U_ISRHandler(void* arg) {
 void FT6336U_UpdateTask(void *arg) {
     uint8_t buff[5] = {0x00, 0x00, 0x00, 0x00, 0x00};
     bool press_stash;
+    esp_err_t err;
+
     for (;;) {
-        i2c_read_bytes(ft6336u_i2c, 0x02, buff, 5);
-        
+        err = i2c_read_bytes(ft6336u_i2c, 0x02, buff, 5);
+        if (err != ESP_OK) {
+            vTaskDelay(1);
+            continue;
+        }
         xSemaphoreTake(thread_mutex, portMAX_DELAY);
         _pressed = buff[0] ? true : false;
         _x = ((buff[1] & 0x0f) << 8) | buff[2];
         _y = ((buff[3] & 0x0f) << 8) | buff[4];
+        // ESP_LOGW("FT6336U", "%u %u %u %u %u(%u,%u)", buff[0], buff[1], buff[2], buff[3], buff[4], _x, _y);
         press_stash = _pressed;
         xSemaphoreGive(thread_mutex);
 

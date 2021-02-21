@@ -58,8 +58,8 @@ static void boot_process()
     TaskHandle_t* serial_handle = NULL;
     TaskHandle_t* ble_handle = NULL;
 
-    gpio_pad_select_gpio(PIN_NUM_TCS);
-    gpio_set_direction(PIN_NUM_TCS, GPIO_MODE_OUTPUT);
+    // gpio_pad_select_gpio(PIN_NUM_TCS);
+    // gpio_set_direction(PIN_NUM_TCS, GPIO_MODE_OUTPUT);
 
     if (!jade_process_init(&serial_handle, &ble_handle)) {
         JADE_ABORT();
@@ -70,6 +70,12 @@ static void boot_process()
 #endif
 
     power_init();
+    for (int lp = 0; lp < 3; lp++) {
+        vTaskDelay(pdMS_TO_TICKS(250));
+        power_led(0);
+        vTaskDelay(pdMS_TO_TICKS(250));
+        power_led(1);
+    }
 
     if (!storage_init()) {
         JADE_ABORT();
@@ -80,6 +86,7 @@ static void boot_process()
     display_init();
     gui_init();
     idletimer_init();
+    // power_speaker(1);
     input_init();
 
     // Display splash screen with Blockstream logo.  Carry out further initialisation
@@ -92,13 +99,6 @@ static void boot_process()
     wait_event_data_t* event_data = make_wait_event_data();
     JADE_ASSERT(event_data);
     gui_activity_register_event(act, GUI_EVENT, GUI_FRONT_CLICK_EVENT, sync_wait_event_handler, event_data);
-
-    for (int lp = 0; lp < 5; lp++) {
-        vTaskDelay(500 / portTICK_RATE_MS);
-        power_led(0);
-        vTaskDelay(500 / portTICK_RATE_MS);
-        power_led(1);
-    }
 
     if (!serial_init(serial_handle)) {
         JADE_ABORT();

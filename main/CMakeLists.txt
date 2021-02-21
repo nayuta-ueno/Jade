@@ -15,7 +15,7 @@ idf_component_register(SRC_DIRS "."
                                 "${bledir}"
         PRIV_INCLUDE_DIRS "."
                           "${bledir}"
-        PRIV_REQUIRES assets libwally-core tft libsodium button bootloader_support app_update nvs_flash bt autogenlang cbor
+        PRIV_REQUIRES assets libwally-core tft libsodium button speaker bootloader_support app_update nvs_flash bt autogenlang cbor
         EMBED_TXTFILES ${PROJECT_DIR}/jade_services_certificate.pem
         EMBED_FILES ${PROJECT_DIR}/${pinserverpubkey})
 

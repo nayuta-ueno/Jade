@@ -22,6 +22,8 @@ esp_err_t power_lcd_reset_on();
 esp_err_t power_lcd_reset_off();
 esp_err_t power_shutdown();
 esp_err_t power_led(uint8_t onoff);
+void power_led_blink(void);
+esp_err_t power_speaker(uint8_t onoff);
 
 uint16_t power_get_vbat();
 uint8_t power_get_battery_status();
