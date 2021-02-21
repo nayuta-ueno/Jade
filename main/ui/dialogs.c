@@ -97,6 +97,7 @@ static void await_msg_activity(const char* msg, const bool error)
     const bool ret
         = gui_activity_wait_event(msg_activity, GUI_BUTTON_EVENT, BTN_EXIT_MESSAGE_SCREEN, NULL, NULL, NULL, 0);
 #else
+#error !!!
     vTaskDelay(CONFIG_DEBUG_UNATTENDED_CI_TIMEOUT_MS);
     const bool ret = true;
 #endif

@@ -40,7 +40,8 @@ void make_mnemonic_qr_scan(gui_activity_t** activity_ptr, gui_view_node_t** came
 bool pinclient_savekeys(
     jade_process_t* process, const char* network, const uint8_t* pin, size_t pin_size, const keychain_t* keydata);
 
-#ifndef CONFIG_DEBUG_UNATTENDED_CI
+#if 0
+// #ifndef CONFIG_DEBUG_UNATTENDED_CI
 // Function to change the mnemonic word separator and provide pointers to
 // the start of the words.  USed when confirming one word at a time.
 static void change_mnemonic_word_separator(
@@ -573,7 +574,8 @@ void mnemonic_process(void* process_ptr)
         gui_set_current_activity(activity);
 
 // In a debug unattended ci build, use hardcoded mnemonic after a short delay
-#ifndef CONFIG_DEBUG_UNATTENDED_CI
+//#ifndef CONFIG_DEBUG_UNATTENDED_CI
+#if 0
         int32_t ev_id;
         const bool ret = gui_activity_wait_event(activity, GUI_BUTTON_EVENT, ESP_EVENT_ANY_ID, NULL, &ev_id, NULL, 0);
         JADE_ASSERT(ret);
@@ -598,7 +600,7 @@ void mnemonic_process(void* process_ptr)
             got_mnemonic = mnemonic_new(process, mnemonic);
         }
 #else
-        vTaskDelay(CONFIG_DEBUG_UNATTENDED_CI_TIMEOUT_MS / portTICK_PERIOD_MS);
+        //vTaskDelay(CONFIG_DEBUG_UNATTENDED_CI_TIMEOUT_MS / portTICK_PERIOD_MS);
         strcpy(mnemonic,
             "fish inner face ginger orchard permit useful method fence kidney chuckle party favorite sunset draw limb "
             "science crane oval letter slot invite sadness banana");

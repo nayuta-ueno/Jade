@@ -52,10 +52,10 @@ void input_init(void)
     Button_Init();
 
     // // (0, 240)-(320, 300)を4分割
-    button[BUTTON_FRONT] = Button_Attach(0, 240, 80, 60);
-    button[BUTTON_ENC] = Button_Attach(80, 240, 80, 60);
-    button[BUTTON_PREV] = Button_Attach(160, 240, 80, 60);
-    button[BUTTON_NEXT] = Button_Attach(240, 240, 80, 60);
+    button[BUTTON_FRONT] = Button_Attach(0, 200, 80, 100);
+    button[BUTTON_ENC] = Button_Attach(80, 200, 80, 100);
+    button[BUTTON_PREV] = Button_Attach(160, 200, 80, 100);
+    button[BUTTON_NEXT] = Button_Attach(240, 200, 80, 100);
 
     button_func[BUTTON_FRONT] = button_front_release;
     button_func[BUTTON_ENC] = button_wheel_release;
