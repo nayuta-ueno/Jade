@@ -676,12 +676,12 @@ static void do_dashboard(jade_process_t* process, const keychain_t* const expect
         // Ensure to clear the keychain if ble- or usb- connection status changes.
         // NOTE: if this clears a populated keychain then this loop will complete
         // and cause this function to return.
-        if (keychain_get()) {
-            if (ble_connected() != initial_ble || usb_connected() != initial_usb) {
-                JADE_LOGI("Connection status changed - clearing keychain");
-                free_keychain();
-            }
-        }
+        // if (keychain_get()) {
+        //     if (ble_connected() != initial_ble || usb_connected() != initial_usb) {
+        //         JADE_LOGI("Connection status changed - clearing keychain");
+        //         free_keychain();
+        //     }
+        // }
 
         // Looping without having done anything this iteration
         // Set flag to false so we don't set the screen back to dashboard
