@@ -514,6 +514,7 @@ void make_recover_word_page_select10(gui_activity_t** activity_ptr, gui_view_nod
     gui_set_parent(buttons_hsplit, vsplit);
 }
 
+#if 0
 void make_mnemonic_qr_scan(gui_activity_t** activity_ptr, gui_view_node_t** camera_node, gui_view_node_t** textbox)
 {
     JADE_ASSERT(activity_ptr);
@@ -583,3 +584,4 @@ void make_mnemonic_qr_scan(gui_activity_t** activity_ptr, gui_view_node_t** came
     gui_set_align(btn2_text, GUI_ALIGN_CENTER, GUI_ALIGN_MIDDLE);
     gui_set_parent(btn2_text, btn2);
 }
+#endif

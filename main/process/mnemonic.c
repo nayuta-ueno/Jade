@@ -34,14 +34,13 @@ void make_recover_word_page(gui_activity_t** activity_ptr, gui_view_node_t** tex
     gui_view_node_t** enter, gui_view_node_t** keys);
 void make_recover_word_page_select10(
     gui_activity_t** activity_ptr, gui_view_node_t** textbox, gui_view_node_t** status);
-void make_mnemonic_qr_scan(gui_activity_t** activity_ptr, gui_view_node_t** camera_node, gui_view_node_t** textbox);
+// void make_mnemonic_qr_scan(gui_activity_t** activity_ptr, gui_view_node_t** camera_node, gui_view_node_t** textbox);
 
 // Pinserver interaction
 bool pinclient_savekeys(
     jade_process_t* process, const char* network, const uint8_t* pin, size_t pin_size, const keychain_t* keydata);
 
-#if 0
-// #ifndef CONFIG_DEBUG_UNATTENDED_CI
+#ifndef CONFIG_DEBUG_UNATTENDED_CI
 // Function to change the mnemonic word separator and provide pointers to
 // the start of the words.  USed when confirming one word at a time.
 static void change_mnemonic_word_separator(
@@ -488,6 +487,7 @@ static bool mnemonic_recover(jade_process_t* process, char mnemonic[MNEMONIC_BUF
     return true;
 }
 
+#if 0
 static bool mnemonic_qr(jade_process_t* process, char mnemonic[MNEMONIC_BUFLEN])
 {
     gui_activity_t* activity;
@@ -534,6 +534,7 @@ static bool mnemonic_qr(jade_process_t* process, char mnemonic[MNEMONIC_BUFLEN])
     SENSITIVE_POP(&camera_data);
     return scanned_qr;
 }
+#endif  // 0
 #endif // CONFIG_DEBUG_UNATTENDED_CI
 
 void mnemonic_process(void* process_ptr)
@@ -574,8 +575,7 @@ void mnemonic_process(void* process_ptr)
         gui_set_current_activity(activity);
 
 // In a debug unattended ci build, use hardcoded mnemonic after a short delay
-//#ifndef CONFIG_DEBUG_UNATTENDED_CI
-#if 0
+#ifndef CONFIG_DEBUG_UNATTENDED_CI
         int32_t ev_id;
         const bool ret = gui_activity_wait_event(activity, GUI_BUTTON_EVENT, ESP_EVENT_ANY_ID, NULL, &ev_id, NULL, 0);
         JADE_ASSERT(ret);
@@ -591,16 +591,16 @@ void mnemonic_process(void* process_ptr)
             got_mnemonic = mnemonic_recover(process, mnemonic);
             break;
 
-        case BTN_QR_MNEMONIC_BEGIN:
-            got_mnemonic = mnemonic_qr(process, mnemonic);
-            break;
+        // case BTN_QR_MNEMONIC_BEGIN:
+        //     got_mnemonic = mnemonic_qr(process, mnemonic);
+        //     break;
 
         case BTN_NEW_MNEMONIC_BEGIN:
         default:
             got_mnemonic = mnemonic_new(process, mnemonic);
         }
 #else
-        //vTaskDelay(CONFIG_DEBUG_UNATTENDED_CI_TIMEOUT_MS / portTICK_PERIOD_MS);
+        vTaskDelay(CONFIG_DEBUG_UNATTENDED_CI_TIMEOUT_MS / portTICK_PERIOD_MS);
         strcpy(mnemonic,
             "fish inner face ginger orchard permit useful method fence kidney chuckle party favorite sunset draw limb "
             "science crane oval letter slot invite sadness banana");
