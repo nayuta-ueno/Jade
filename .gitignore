@@ -8,3 +8,4 @@ sdkconfig.old
 *.swp
 __pycache__
 main/autogen_lang.*
+venv3
