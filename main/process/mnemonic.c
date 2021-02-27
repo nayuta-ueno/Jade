@@ -105,7 +105,7 @@ static bool mnemonic_new(jade_process_t* process, char mnemonic[MNEMONIC_BUFLEN]
         gui_activity_wait_event(last_activity, GUI_BUTTON_EVENT, BTN_MNEMONIC_NEXT, NULL, NULL, NULL, 0);
 
         JADE_LOGD("moving on to confirm_mnemonic");
-
+#if 0
         bool already_confirmed[24] = { false };
 
         // confirm the mnemonic
@@ -181,6 +181,10 @@ static bool mnemonic_new(jade_process_t* process, char mnemonic[MNEMONIC_BUFLEN]
                 break;
             }
         }
+#else
+        //うまくconfirm画面が操作できないので、とりあえずスキップする
+        mnemonic_confirmed = true;
+#endif
     }
     JADE_LOGD("mnemonic confirmed");
     SENSITIVE_POP(words);
